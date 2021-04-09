@@ -2,11 +2,12 @@
 
 namespace App\Console\Commands;
 
-use App\Http\Controllers\Api\FestivitiesController;
 use App\Models\Festivity;
+use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Orion\Http\Requests\Request;
+use Illuminate\Support\Facades\Validator;
 
 class LoadFestivitiesCommand extends Command
 {
@@ -41,34 +42,66 @@ class LoadFestivitiesCommand extends Command
      */
     public function handle()
     {
-        if (Festivity::count() == 0) {
-            try {
-                DB::beginTransaction();
-
-                $file = $this->option('file') ?? base_path('festivities.xml');
-                $xml = simplexml_load_file($file);
-                $json = json_encode($xml);
-                $array = json_decode($json, true);
-
-                $request = app(Request::class)->merge([
-                    'resources' => $array['festivity']
-                ]);
-
-                app(FestivitiesController::class)->batchStore($request);
-
-                DB::commit();
-
-                $this->info("Initialized database!!!");
-                
-            } catch (\Exception $e) {
-
-                $this->error('Error Initialized database, restoring ...');
-                $this->error($e->getMessage());
-                DB::rollBack();
-            }
+        if (Festivity::count() === 0) {
+            $this->setupFestivities();
         } else {
             $this->warn('Already initialized database');
         }
         return 0;
+    }
+
+    private function readXMLFile()
+    {
+        $file = $this->option('file') ?? base_path('festivities.xml');
+        $xml = simplexml_load_file($file);
+        $json = json_encode($xml);
+        $array = json_decode($json, true);
+        return $array['festivity'];
+    }
+
+    private function getValidRecords($data)
+    {
+        return Arr::where($data, function ($value) {
+            $validation = Validator::make($value, [
+                'name' => 'required|string|max:255',
+                'place' => 'required|string|max:255',
+                'start' => 'required|before:end|date_format:Y-m-d\TH:i:s.v\Z',
+                'end' => 'required|after:start|date_format:Y-m-d\TH:i:s.v\Z',
+            ]);
+            return !$validation->fails();
+        });
+    }
+
+    private function setupFestivities()
+    {
+        try {
+            $data = $this->readXMLFile();
+            $validatedData = $this->getValidRecords($data);
+
+            $this->info("Initializing database!!!");
+
+            $toInsert = count($validatedData);
+            $possible = count($data);
+            $errors = $possible - $toInsert;
+
+            $this->info("{$toInsert} valid records from {$possible} were found");
+            $this->info("Inserting valid records...");
+
+            DB::beginTransaction();
+                $this->output->progressStart($toInsert);
+                foreach ($validatedData as $festivity) {
+                    Festivity::create($festivity);
+                    $this->output->progressAdvance();
+                }
+                $this->output->progressFinish();
+            DB::commit();
+
+            $this->error("{$errors} errors found");
+        } catch (Exception $e) {
+
+            $this->error('Error Initialized database, restoring ...');
+            $this->error($e->getMessage());
+            DB::rollBack();
+        }
     }
 }

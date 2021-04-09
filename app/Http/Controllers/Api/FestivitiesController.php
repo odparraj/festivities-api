@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Requests\FestivityRequest;
 use App\Http\Resources\FestivityResource;
 use App\Models\Festivity;
+use Illuminate\Http\Request;
 use Orion\Concerns\DisableAuthorization;
 use Orion\Http\Controllers\Controller;
 
@@ -64,5 +65,14 @@ class FestivitiesController extends Controller
     protected function exposedScopes() : array
     {
         return ['whereBetween'];
+    }
+
+    public function searchIndexed(Request $request)
+    {
+        $request->validate([
+            'value' => 'required|string|max:255'
+        ]);
+        $defaultPaginate = config('festivities.default_paginate', 15);
+        return Festivity::search($request->value)->paginate($defaultPaginate);
     }
 }

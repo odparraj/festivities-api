@@ -16,5 +16,6 @@ use Orion\Facades\Orion;
 */
 
 Route::group(['as' => 'api.'], function() {
+    Route::get('festivities/search', [FestivitiesController::class, 'searchIndexed']);
     Orion::resource('festivities', FestivitiesController::class);
 });
