@@ -85,7 +85,7 @@ class LoadFestivitiesCommand extends Command
             $errors = $possible - $toInsert;
 
             $this->info("{$toInsert} valid records from {$possible} were found");
-            $this->info("Inserting valid records...");
+            $this->warn("Inserting valid records...");
 
             DB::beginTransaction();
                 $this->output->progressStart($toInsert);
