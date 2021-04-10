@@ -73,6 +73,7 @@ class FestivitiesController extends Controller
             'value' => 'required|string|max:255'
         ]);
         $defaultPaginate = config('festivities.default_paginate', 15);
-        return Festivity::search($request->value)->paginate($defaultPaginate);
+        $festivitiesCollection = Festivity::search($request->value)->paginate($defaultPaginate);
+        return FestivityResource::collection($festivitiesCollection);
     }
 }
