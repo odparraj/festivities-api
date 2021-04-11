@@ -14,19 +14,24 @@ cd festivities-api
 ./run.sh
 ```
 
+### Access to API
+``` 
+http://festivities-api.test/api
+```
+
 ## Api Features
 Method     | URI
 -----------|-----------------------------
-POST       | api/festivities             
-GET - HEAD | api/festivities             
-POST       | api/festivities/batch       
-PATCH      | api/festivities/batch       
-DELETE     | api/festivities/batch       
-GET - HEAD | api/festivities/search (indexed search)      
-POST       | api/festivities/search (database search)     
-GET - HEAD | api/festivities/{festivity} 
-PUT - PATCH| api/festivities/{festivity} 
-DELETE     | api/festivities/{festivity} 
+POST       | http://festivities-api.test/api/festivities
+GET - HEAD | http://festivities-api.test/api/festivities
+POST       | http://festivities-api.test/api/festivities/batch
+PATCH      | http://festivities-api.test/api/festivities/batch
+DELETE     | http://festivities-api.test/api/festivities/batch
+GET - HEAD | http://festivities-api.test/api/festivities/search (indexed search)
+POST       | http://festivities-api.test/api/festivities/search (database search)
+GET - HEAD | http://festivities-api.test/api/festivities/{festivity}
+PUT - PATCH| http://festivities-api.test/api/festivities/{festivity}
+DELETE     | http://festivities-api.test/api/festivities/{festivity}
 
 
 ## Postman Collection
